@@ -1,5 +1,6 @@
 FROM scratch
 WORKDIR /
 COPY app /
-COPY templates templates
+COPY src /
+COPY pkg /
 CMD ["/app"]
