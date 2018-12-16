@@ -7,59 +7,67 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// Ok so I'm going to put a bit of work into seperating the Redis connection 
-// and then passing it into the functions or passing in a pointer.
-
-
-func test(w http.ResponseWriter, r *http.Request) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	// client.Set("test", "test1")
-	// val, _ := client.Get("test").Result()
-	fmt.Println(client)
-	// r.ParseForm()
-	// fmt.Println(r.FormValue("key"))
-	// fmt.Println(r.FormValue("value"))
-	// fmt.Println(r.Form)
+type RedisDB struct {
+	Addr string
+	Password string
+	DB int
+	conn *redis.Client
 }
 
-func setValue(w http.ResponseWriter, r *http.Request) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+func (r *RedisDB) MakeConnection() {
+	r.conn = redis.NewClient(&redis.Options{
+		Addr:     r.Addr,
+		Password: r.Password, // no password set
+		DB:       r.DB,  // use default DB
 	})
-	r.ParseForm()
-	key := r.FormValue("key")
-	value := r.FormValue("value")
-	err := client.Set(key, value, 0).Err()
+}
+
+func (r *RedisDB) Test() {
+	pong, err := r.conn.Ping().Result()
+	fmt.Println(pong, err)
+}
+
+func (r *RedisDB) SetValue(key string, num string) {
+	err := r.conn.Set(key, num, 0).Err()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("set value done")
 }
 
-func getValue(w http.ResponseWriter, r *http.Request) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	r.ParseForm()
-	key := r.FormValue("key")
-	val, err := client.Get(key).Result()
+func (r *RedisDB) GetValue(key string) string {
+	val, err := r.conn.Get(key).Result()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Get value done", val)
+	return val
+}
+
+func InputValue(db *RedisDB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		key := r.FormValue("key")
+		value := r.FormValue("value")
+		db.SetValue(key, value)
+		fmt.Fprintf(w, "done")
+    }
+}
+
+func ExtracValue(db *RedisDB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		key := r.FormValue("key")
+		value := db.GetValue(key)
+		fmt.Fprintf(w, value)
+    }
 }
 
 func main() {
-	http.HandleFunc("/test", test)
-	http.HandleFunc("/setValue", setValue)
-	http.HandleFunc("/getValue", getValue)
+	database := RedisDB{Addr:"localhost:6379", Password:"", DB:0}
+	database.MakeConnection()
+	database.Test()
+	handleInput := InputValue(&database)
+	handleOutput := ExtracValue(&database)
+	http.HandleFunc("/SetValue", handleInput)
+	http.HandleFunc("/GetValue", handleOutput)
 	http.ListenAndServe(":5000", nil)
 }
