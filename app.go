@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/go-redis/redis"
 )
+
+var wg sync.WaitGroup
 
 type RedisDB struct {
 	Addr string
@@ -28,6 +31,7 @@ func (r *RedisDB) Test() {
 }
 
 func (r *RedisDB) SetValue(key string, num string) {
+	// defer wg.Done()
 	err := r.conn.Set(key, num, 0).Err()
 	if err != nil {
 		panic(err)
@@ -47,7 +51,8 @@ func InputValue(db *RedisDB) func(http.ResponseWriter, *http.Request) {
 		r.ParseForm()
 		key := r.FormValue("key")
 		value := r.FormValue("value")
-		db.SetValue(key, value)
+		// wg.Add(1)
+		go db.SetValue(key, value)
 		fmt.Fprintf(w, "done")
     }
 }

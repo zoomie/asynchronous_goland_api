@@ -1,26 +1,63 @@
-package main
+// package main
 
-import "fmt"
+// import (
+// 	"fmt"
+// 	"sync"
 
-type Redis struct {
-	foo string
-	point_num *int
-}
+// 	"github.com/go-redis/redis"
+// )
 
-func (r *Redis) ChangeValue(value *int) {
-	r.point_num = value
-}
+// var wg sync.WaitGroup
 
-func main() {
-	// channel := make(chan string)
-	num1 := 10
-	num2 := 20
-	redis := Redis{"memory", &num1}
-	fmt.Println(redis)
-	redis.ChangeValue(&num2)
-	fmt.Println(redis)
-	fmt.Println(*redis.point_num)
-	// redis := Redis{"test", }
-	// redis.Store(4)
-	// fmt.Println(redis)
-}
+// type RedisDB struct {
+// 	Addr string
+// 	Password string
+// 	DB int
+// 	conn *redis.Client
+// }
+
+// func (r *RedisDB) MakeConnection() {
+// 	r.conn = redis.NewClient(&redis.Options{
+// 		Addr:     r.Addr,
+// 		Password: r.Password, // no password set
+// 		DB:       r.DB,  // use default DB
+// 	})
+// }
+
+// func (r *RedisDB) Test() {
+// 	defer wg.Done()
+// 	pong, err := r.conn.Ping().Result()
+// 	fmt.Println(pong, err)
+// }
+
+// func (r *RedisDB) SetValue(key string, num string) {
+// 	err := r.conn.Set(key, num, 0).Err()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
+
+// func (r *RedisDB) GetValue(key string) string {
+// 	val, err := r.conn.Get(key).Result()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	return val
+// }
+
+// func p(words string) {
+// 	defer wg.Done()
+// 	fmt.Println(words)
+// }
+
+// func main() {
+// 	database := RedisDB{Addr:"localhost:6379", Password:"", DB:0}
+// 	database.MakeConnection()
+// 	for i:=0;i<100000;i++ {
+// 		wg.Add(1)
+// 		go database.Test()
+// 	}
+
+// 	wg.Wait()
+// 	fmt.Println("done")
+// }
