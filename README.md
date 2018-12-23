@@ -2,10 +2,9 @@
 
 All the action is in the app.go 
 
-Change of plan, I still want it to be async but I also want it to be a Docker image built from scratch.
+I know that it's a bit silly to access a Redis Database though an http connection as the speed gained from using RAM memory is lost by networking bandwidth. My reason is that I wanted to learn how Redis worked with Go and how Go's http package uses concurrency. 
 
-Done: Add Redis database next and see how that integrates with scratch, I am probably use docker compose to join them.
-
+as you then loose the speed gains and the actual point of using Redis (Using Ram memory) but I just wanted to learn how Redis works with Go (extremely simple as it turns out). 
 ```
 ab -n 10000 -c 20 "http://localhost:5000/SetValue?key=key1&value=value1"
 ```
